@@ -1,0 +1,69 @@
+WordPress Installation Guide on CentOS 7
+ 
+Login as root user
+su –
+Enter password
+  Password: *******
+Disable Linux Firewall
+  vi /etc/sysconfig/selinux
+This opens theconfiguration file for the firewall. Edit the following line to disable the firewall
+  SELINUX=enforcing
+To
+   SELINUX=disabled
+Press escape and then enter :wq to write and save the configuration file
+Reboot so that the changes take place
+   reboot
+Check the status of the firewall
+   sestatus
+It should return with the following
+   SELinux status: disabled
+Install all required packages for LAMP Stack
+yum install httpd php php-common php-mysqlnd php-mbstring php-gd mariadb-server mod_ssl   -y
+Edit apache configuration file to allow hypertext access to be used
+sed -i ‘s/AllowOverride non/AllowOverride all/g’ /etc/httpd/conf/httpd.conf
+Start apache and mysql server
+        	systemctl enable --now httpd && systemctl enable --now mariadb
+Confirm that the database and apache are running
+   	    	systemctl status httpd
+      systemctl status mariadb
+Check that apache server is running within the browser, Find your ip address and it type into your browser
+ip a
+Type ip address into browser and the apache testing page should appear
+Access mysql database management system
+        	mysql
+Create wordpress database    	
+CREATE DATABASE  wordpress;
+To see the created database
+        	show databases;
+Create database user and grant the user privileges to the database
+CREATE USER admin@localhost IDENTIFIED BY "redhat";
+GRANT ALL ON wordpress.* TO admin@localhost;
+  	exit
+Download wordpress package
+        	curl -O https://wordpress.org/latest.tar.gz
+Extract downloaded wordpress file
+        	tar zxvf latest.tar.gz
+Move installation of wordpress to HTML directory
+           	mv wordpress/* /var/www/html
+Update permissions so files can be uploaded through wordpress
+        	chown -R apache:apache /var/www/html
+Update to the correct version of php for your version of wordpress. For wordpress 5.2.2 it requires at least php 5.6.20. To update to php 5.6 run the following commands.
+
+Install EPEL repository
+  rpm -Uvh http://vault.centos.org/7.0.1406/extras/x86_64/Packages/epel-release-7-5.noarch.rpm
+Install the remi repository
+rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
+Enable remi
+yum --enablerepo=remi,remi-php56 install php php-common
+
+Install php5.6
+  yum --enablerepo=remi,remi-php56 install php-cli  php-pear php-pdo php-mysql php-mysqlnd php-pgsql php-sqlite php-gd php-mbstring php-mcrypt php-xml php-simplexml php-curl php-zip
+ 
+Restart apache server in order for changes to take place
+	systemctl restart httpd.service
+Type ip address into browser along with /wp-admin/setup-config.php
+Example:
+        	10.0.2.15/wp-admin/setup-config.php
+edit wp-config.php by using sample file
+Wordpress welcome page should appear if installed correctly
+
